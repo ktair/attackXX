@@ -2,14 +2,16 @@
 '''
 Created on 2017/02/17
 @author: ktair
+use python3.6.4
 '''
-from Tkinter import *
+
+import tkinter as tk
 
 BOX_SIZE = 80
 BOX_NUM = 5
 MARGIN = 20
 CANVAS_SIZE = BOX_SIZE * BOX_NUM + MARGIN*2
-TEXT_FONT = ("","50")
+TEXT_FONT = ("","40")
 
 # 色設定
 DEFAULT_COLOR = "lightgray"
@@ -17,30 +19,32 @@ ONCOLOR = "darkgray"
 colors = ['red', 'green', 'blue', 'white', 'yellow', 'brown']
 teams = ['Fender', 'Gibson', 'Fernandes', 'Epiphone', 'prs']
 
-root = Tk()
+root = tk.Tk()
 root.config(bg='black')
-colorselect = IntVar()
+colorselect = tk.IntVar()
 colorselect.set(0)
 for i in range(teams.__len__()):
-    Radiobutton(bg=colors[i], variable=colorselect, value=i,).grid(row=1,column=i)
+    tk.Radiobutton(bg=colors[i], variable=colorselect, value=i,).grid(row=1,column=i)
 
 # 盤面
-c0 = Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, bg='black', highlightthickness=0)
+c0 = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, bg='black', highlightthickness=0)
 c0.grid(row=2,columnspan=teams.__len__())
 boxes = {}
 boxcolors = {}
+boxlavels = {}
 for n in range(BOX_NUM ** 2):
     x = BOX_SIZE * (n%BOX_NUM) + MARGIN
-    y = BOX_SIZE * (n/BOX_NUM) + MARGIN
+    y = BOX_SIZE * (n//BOX_NUM) + MARGIN
     boxes[n] = c0.create_rectangle(x, y, x+BOX_SIZE, y+BOX_SIZE, fill=DEFAULT_COLOR, activefill=ONCOLOR, tag='free')
     boxcolors[n] = DEFAULT_COLOR
-    c0.create_text(x+(BOX_SIZE/2),y+(BOX_SIZE/2),text=str(n+1),font=TEXT_FONT)
+    boxlavels[n] = c0.create_text(x+(BOX_SIZE/2),y+(BOX_SIZE/2),text=str(n+1),font=TEXT_FONT, activefill=ONCOLOR, tag='label')
 
+# 選択したボックスのID取得
 def find_items(id, items):
     for k,v in items.items():
         if v == id:
             return k
-
+# オセロ
 def reverse(color):
     selectedboxid = c0.find_withtag("selected")[0]
     c0.itemconfigure(selectedboxid, tag="filled")
@@ -64,10 +68,11 @@ def reverse(color):
         # 斜め
         if num%(BOX_NUM+1) == selectnum%(BOX_NUM+1):
             search(num, color, selectnum, BOX_NUM+1)
-        if num%(BOX_NUM-1) == selectnum%(BOX_NUM-1):
-            search(num, color, selectnum, BOX_NUM-1)
+        else:
+            if num%(BOX_NUM-1) == selectnum%(BOX_NUM-1):
+                search(num, color, selectnum, BOX_NUM-1)
     rescore()
-
+# 同じ色で挟まれたボックスの探索
 def search(num, color, selectnum, phase):
     changecolorbox = []
     plus = selectnum + phase
@@ -100,7 +105,7 @@ def search(num, color, selectnum, phase):
         for x in changecolorbox:
             boxcolors[x] = color
             changecolorbox = []
-
+# 塗り替え
 def change_color(event):
     aftercolor = colors[colorselect.get()]
     c0.itemconfigure('current', fill=aftercolor, tag="selected", activefill=aftercolor)
@@ -110,7 +115,7 @@ c0.tag_bind('free', "<Button-1>", change_color)
 
 # 得点表
 rectangle_size = CANVAS_SIZE/teams.__len__()
-c1 = Canvas(root, width=CANVAS_SIZE, height=rectangle_size, bg='black', highlightthickness=0)
+c1 = tk.Canvas(root, width=CANVAS_SIZE, height=rectangle_size, bg='black', highlightthickness=0)
 c1.grid(row=0, columnspan=teams.__len__())
 scores = {}
 # 初期表示
@@ -122,7 +127,7 @@ for i in range(teams.__len__()):
             count += 1
     scores[i] = c1.create_text(i*rectangle_size+rectangle_size/2, rectangle_size/2, text=count,font=TEXT_FONT)
     c1.create_text(i*rectangle_size+rectangle_size/2, 10, text=teams[i],font=("","20"))
-
+# 得点更新
 def rescore():
     for i in range(teams.__len__()):
         count = 0
