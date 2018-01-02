@@ -7,9 +7,8 @@ use python3.6.4
 
 - 見た目
     - ボタン配置
-    - 配色
 - 使い勝手
-    - 実行ファイル化
+    - 実行ファイル化?
 '''
 
 import tkinter as tk
@@ -26,12 +25,17 @@ DEFAULT_COLOR = "lightgray"
 ONCOLOR = "darkgray"
 ATTACK_CHANCE_COLOR = 'yellow'
 colors = [
-    'red',
-    'green',
-    'blue',
-    'white',
-    'orange',
-    'brown']
+    "#ff0000", # 1-red
+    "#228b22", # 2-forestgreen
+    "#00ffff", # 3-cyan
+    "#ffffff", # 4-white
+    "#800080", # 5-purple
+    "#ffa500", # 6-orange
+    "#00ff7f", # 7-springgreen
+    "#0000ff", # 8-blue
+    "#f5deb3", # 9-wheat
+    "#ffc0cb" # 10-pink
+]
 # チーム名設定
 teams = []
 try:
@@ -51,7 +55,11 @@ root.config(bg='black')
 colorselect = tk.IntVar()
 colorselect.set(0)
 for i in range(teams.__len__()):
-    tk.Radiobutton(bg=colors[i], variable=colorselect, value=i,).grid(row=1,column=i)
+    if i < 10:
+        color = colors[i]
+    else:
+        color = colors[i-10]
+    tk.Radiobutton(bg=color, variable=colorselect, value=i).grid(row=1,column=i)
 
 # 盤面
 c0 = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, bg='black', highlightthickness=0)
@@ -168,13 +176,17 @@ c1.grid(row=0, columnspan=teams.__len__())
 scores = {}
 # 初期表示
 for i in range(teams.__len__()):
-    c1.create_rectangle(i*rectangle_size, 0, (i+1)*rectangle_size, rectangle_size,fill=colors[i])
+    if i < 10:
+        color = colors[i]
+    else:
+        color = colors[i-10]
+    c1.create_rectangle(i*rectangle_size, 0, (i+1)*rectangle_size, rectangle_size,fill=color)
     count = 0
     for j in range(panelcolor.__len__()):
-        if panelcolor[j] == colors[i]:
+        if panelcolor[j] == color:
             count += 1
-    scores[i] = c1.create_text(i*rectangle_size+rectangle_size/2, rectangle_size/2, text=count,font=TEXT_FONT)
-    c1.create_text(i*rectangle_size+rectangle_size/2, 10, text=teams[i],font=("","20"))
+    scores[i] = c1.create_text(i*rectangle_size+rectangle_size/2, rectangle_size/2, text=count,font=('',rectangle_size//2))
+    c1.create_text(i*rectangle_size+rectangle_size/2, 10, text=teams[i],font=("",rectangle_size//5))
 # 得点更新
 def rescore():
     for i in range(teams.__len__()):
