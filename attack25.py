@@ -1,7 +1,7 @@
 # coding: utf-8
 '''
 Created on 2017/02/17
-LastUpdate 2018/1/1
+LastUpdate 2018/1/6
 @author: ktair
 use python3.6.4
 
@@ -52,14 +52,17 @@ except:
 
 root = tk.Tk()
 root.config(bg='black')
+
+# 色選択
 colorselect = tk.IntVar()
 colorselect.set(0)
+rectangle_size = CANVAS_SIZE//teams.__len__()
 for i in range(teams.__len__()):
     if i < 10:
         color = colors[i]
     else:
         color = colors[i-10]
-    tk.Radiobutton(bg=color, variable=colorselect, value=i).grid(row=1,column=i)
+    tk.Radiobutton(root, text=teams[i], bg=color, variable=colorselect, value=i,font=("",rectangle_size//5)).grid(row=0,column=i)
 
 # 盤面
 c0 = tk.Canvas(root, width=CANVAS_SIZE, height=CANVAS_SIZE, bg='black', highlightthickness=0)
@@ -170,9 +173,8 @@ c0.tag_bind('free', "<Button-1>", change_color)
 c0.tag_bind('filled', "<Button-1>", set_attackchance)
 
 # 得点表
-rectangle_size = CANVAS_SIZE//teams.__len__()
 c1 = tk.Canvas(root, width=CANVAS_SIZE, height=rectangle_size, bg='black', highlightthickness=0)
-c1.grid(row=0, columnspan=teams.__len__())
+c1.grid(row=1, columnspan=teams.__len__())
 scores = {}
 # 初期表示
 for i in range(teams.__len__()):
@@ -186,7 +188,6 @@ for i in range(teams.__len__()):
         if panelcolor[j] == color:
             count += 1
     scores[i] = c1.create_text(i*rectangle_size+rectangle_size/2, rectangle_size/2, text=count,font=('',rectangle_size//2))
-    c1.create_text(i*rectangle_size+rectangle_size/2, 10, text=teams[i],font=("",rectangle_size//5))
 # 得点更新
 def rescore():
     for i in range(teams.__len__()):
@@ -213,12 +214,15 @@ def back():
         return
     for n in panelcolor:
         if panelcolor[n] != past_panelcolor[n]:
-            c0.itemconfigure(panels[n], fill=past_panelcolor[n])
-            panelcolor[n] = past_panelcolor[n]
+            back_tag = 'filled'
+            back_activefill = past_panelcolor[n]
             if past_panelcolor[n] == DEFAULT_COLOR:
-                c0.itemconfigure(panels[n], tag='free')
+                back_tag = 'free'
+                back_activefill = ONCOLOR
             if past_panelcolor[n] == ATTACK_CHANCE_COLOR:
-                c0.itemconfigure(panels[n], tag='filled')
+                back_tag='free'
+            c0.itemconfigure(panels[n], tag=back_tag, fill=past_panelcolor[n], activefill=back_activefill)
+            panelcolor[n] = past_panelcolor[n]
     rescore()
 # バックアップをとる
 def backup():
